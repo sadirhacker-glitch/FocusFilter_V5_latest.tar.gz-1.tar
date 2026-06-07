@@ -7,11 +7,21 @@ workflows:
       - name: Unpack project
         script: |
           tar -xf FocusFilter_V5.tar.gz-1.tar
-      - name: Generate gradlew and build
+      - name: Generate gradlew and build with log
         script: |
           cd FocusFilter
           gradle wrapper
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --stacktrace --info > build_log.txt 2>&1
+          cat build_log.txt
+      - name: Remove AI files (if build fails, uncomment this)
+        script: |
+          cd FocusFilter
+          # Uncomment below to disable AI and get a working APK
+          # rm -f app/src/main/kotlin/com/focusfilter/BertTokenizer.kt
+          # rm -f app/src/main/kotlin/com/focusfilter/BertSpamDetector.kt
+          # sed -i 's/BertSpamDetector/\/\/BertSpamDetector/g' app/src/main/kotlin/com/focusfilter/service/FocusFilterNotificationService.kt
+          # ./gradlew assembleDebug --stacktrace
     artifacts:
+      - FocusFilter/build_log.txt
       - FocusFilter/app/build/outputs/apk/debug/*.apk
